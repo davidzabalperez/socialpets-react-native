@@ -8,7 +8,7 @@
  */
 
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View} from 'react-native';
+import {Platform, StyleSheet, Text, View, FlatList} from 'react-native';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -19,13 +19,62 @@ const instructions = Platform.select({
 
 type Props = {};
 export default class App extends Component<Props> {
+  
+  constructor(props){
+    super(props);
+      /* generar unos atributos para saber cuando se estan consumiendo */
+      this.state = {
+        loading:false,
+        dogs:[],
+        url: 'http://socialpetssss.herokuapp.com/api/dogs'
+      }
+  }
+  componentDidMount(){
+    this.getDogs();
+  };
+
+  getDogs = ()=>{
+
+    this.setState({ loading:true })
+    /* realiza la peticion al servidor*/
+    fetch(this.state.url)
+    /* la respuesta la convertimos en json parseamos*/
+    .then(response => response.json())
+    /* vamos a obtener los atributos que necesitamos */
+    .then( response => {
+      /* modificamos nuestros atributos */
+      this.setState({
+        dogs :response,
+        url:response,
+        loading:false
+      })
+    });
+  };
+
   render() {
+    /* si estamos en el proceso de descarga  */
+    if (this.state.loading) {
     return (
       <View style={styles.container}>
-        <Text style={styles.welcome}>Esto es SocialPets</Text>
+          <Text>Descargando Dogs!</Text>     
+      </View>
+      );
+    }
+    return (
+      <View style={{flex:1, paddingTop:50, paddingLeft:5}}>
+          <FlatList
+            data={this.state.dogs}
+            renderItem={
+              ({item}) => <Text>{ item.name}</Text>
+            }
+            keyExtractor={(item, index) =>index.toString()}
+          />      
       </View>
     );
   }
+
+
+
 }
 
 const styles = StyleSheet.create({
